@@ -1,3 +1,7 @@
+###########################################
+# Assemble data for the Waitaki catchment #
+###########################################
+
 rm(list=ls())
 
 ################
@@ -40,8 +44,8 @@ network_sub <- netfull %>% filter(grepl("aitaki", CatName))
 obs_sub <- obsfull %>% filter(grepl("aitaki", CatName))
 
 all(obs_sub$nzsegment %in% network_sub$nzsegment)
-# obs_sub <- obs_sub %>% filter(nzsegment %in% network_sub$nzsegment == TRUE)
-hab_sub <- habfull %>% filter(child_s %in% network_sub$child_s == TRUE)
+# obs_sub <- obs_sub %>% filter(nzsegment %in% network_sub$nzsegment)
+hab_sub <- habfull %>% filter(child_s %in% network_sub$child_s)
 covar <- unique(hab_sub$covariate)
 covar_toUse <- c('MeanFlowCumecs','Dist2Coast_FromMid','loc_elev','loc_slope','loc_rnvar',"local_twarm",'DamAffected')
 all(covar_toUse %in% covar)
@@ -88,6 +92,16 @@ sapply(1:length(covar_toUse), function(x){
   sub <- hab_sub %>% filter(covariate == covar_toUse[x])
   any(is.na(sub$value))
 })
+
+
+## Note: The following two spatial interpolations are highly resource intensive.
+##      `This code was required for previous versions of VAST but more recent versions
+##       don't require this set up. However, this code has been kept so that outputs
+##       remain consistent.
+
+############################################
+# Spatial interpolation of NA habitat data #
+############################################
 
 hab_sub2 <- lapply(1:length(covar_toUse), function(x){
   sub <- hab_sub %>% filter(covariate == covar_toUse[x])
@@ -148,6 +162,10 @@ find0 <- sapply(1:length(covar_toUse), function(x){
   any(sub$value==0)
 })
 names(find0) <- covar_toUse
+
+################################################
+# Spatial interpolation of 'zero' habitat data #
+################################################
 
 hab_sub3 <- lapply(1:length(covar_toUse), function(x){
   sub <- hab_sub2 %>% filter(covariate == covar_toUse[x])
